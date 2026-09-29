@@ -1,0 +1,83 @@
+# =========================
+# C / C++
+# =========================
+
+# Object files
+*.o
+*.obj
+
+# Executables
+*.exe
+*.out
+*.elf
+
+# Libraries
+*.a
+*.so
+*.dll
+*.dylib
+
+# Dependency files
+*.d
+
+
+# =========================
+# Verilog / FPGA generated
+# =========================
+
+# Simulation outputs
+*.vcd
+*.fst
+*.lxt
+*.lxt2
+
+# Memory/generated files
+*.mem
+*.cmem
+
+# Common synthesis / simulation outputs
+*.log
+*.jou
+*.wlf
+*.vvp
+
+
+# =========================
+# Build directories
+# =========================
+
+build/
+bin/
+obj/
+dist/
+output/
+outputs/
+generated/
+
+
+# =========================
+# IDE / editors
+# =========================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+
+# =========================
+# OS files
+# =========================
+
+.DS_Store
+Thumbs.db
+
+
+# =========================
+# Misc
+# =========================
+
+*.tmp
+*.temp
+*.bak
