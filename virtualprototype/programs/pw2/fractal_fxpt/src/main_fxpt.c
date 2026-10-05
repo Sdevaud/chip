@@ -20,14 +20,15 @@ int main() {
    volatile unsigned int *vga = (unsigned int *) 0x50000020;
    volatile unsigned int reg, hi;
    float delta = FRAC_WIDTH / SCREEN_WIDTH;
+   rgb565 frameBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
    int i;
    vga_clear();
    printf("Starting drawing a fractal\n");
 
 // passage en ixed point Q2.30
-   fxpt_t_Q2_30 delta_fxpt = f_to_fxpt_Q2_30(delta);
-   fxpt_t_Q2_30 cx_0_fxpt = f_to_fxpt_Q2_30(CX_0);
-   fxpt_t_Q2_30 cy_0_fxpt = f_to_fxpt_Q2_30(CY_0);
+   fxpt_t_Q3_29 delta_fxpt = f_to_fxpt_Q3_29(delta);
+   fxpt_t_Q3_29 cx_0_fxpt = f_to_fxpt_Q3_29(CX_0);
+   fxpt_t_Q3_29 cy_0_fxpt = f_to_fxpt_Q3_29(CY_0);
 
 #ifdef __OR1300__   
    /* enable the caches */

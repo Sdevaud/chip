@@ -1,30 +1,33 @@
 #include "fractal_fxpt.h"
 #include <swap.h>
 
+
 //! \brief  Mandelbrot fractal point calculation function
 //! \param  cx    x-coordinate
 //! \param  cy    y-coordinate
 //! \param  n_max maximum number of iterations
 //! \return       number of performed iterations at coordinate (cx, cy)
-uint16_t calc_mandelbrot_point_soft(fxpt_t_Q2_30 cx, fxpt_t_Q2_30 cy, uint16_t n_max) {
-  fxpt_t_Q2_30 x = cx;
-  fxpt_t_Q2_30 y = cy;
+uint16_t calc_mandelbrot_point_soft(fxpt_t_Q3_29 cx, fxpt_t_Q3_29 cy, uint16_t n_max) {
+  fxpt_t_Q3_29 x = cx;
+  fxpt_t_Q3_29 y = cy;
   uint16_t n = 0;
   int64_t xx, yy, two_xy;
   do {
-    xx = ((int64_t)x * x) >> 30;
-    yy = ((int64_t)y * y) >> 30;
-    two_xy = 2 * ((int64_t)x * y) >> 30;
+    xx = ((int64_t)x * x) >> 29;
+    yy = ((int64_t)y * y) >> 29;
+    two_xy = 2 * ((int64_t)x * y) >> 29;
 
-    int64_t  new_x = xx - yy + cx;
-    int64_t new_y = two_xy + cy;
-    x = (fxpt_t_Q2_30)new_x;
-    y = (fxpt_t_Q2_30)new_y;
+    x = (fxpt_t_Q3_29)xx - yy + cx;
+    y = (fxpt_t_Q3_29)two_xy + cy;
     ++n;
-  } while (((xx + yy) < 4LL * (1LL << 30)) && (n < n_max));
+  } while (((xx + yy) < 4LL * (1LL << 29)) && (n < n_max));
   return n;
 }
 
+
+fxpt_t_Q3_29 f_to_fxpt_Q3_29(float x) {
+    return (fxpt_t_Q3_29)(x * SCALE_Q3_29);
+}
 
 //! \brief  Map number of performed iterations to black and white
 //! \param  iter  performed number of iterations
@@ -102,11 +105,11 @@ rgb565 iter_to_colour1(uint16_t iter, uint16_t n_max) {
 //! \param  n_max  maximum number of iterations
 void draw_fractal(rgb565 *fbuf, int width, int height,
                   calc_frac_point_p cfp_p, iter_to_colour_p i2c_p,
-                  fxpt_t_Q2_30 cx_0, fxpt_t_Q2_30 cy_0, fxpt_t_Q2_30 delta, uint16_t n_max) {
+                  fxpt_t_Q3_29 cx_0, fxpt_t_Q3_29 cy_0, fxpt_t_Q3_29 delta, uint16_t n_max) {
   rgb565 *pixel = fbuf;
-  fxpt_t_Q2_30 cy = cy_0;
+  fxpt_t_Q3_29 cy = cy_0;
   for (int k = 0; k < height; ++k) {
-    fxpt_t_Q2_30 cx = cx_0;
+    fxpt_t_Q3_29 cx = cx_0;
     for(int i = 0; i < width; ++i) {
       uint16_t n_iter = (*cfp_p)(cx, cy, n_max);
       rgb565 colour = (*i2c_p)(n_iter, n_max);
