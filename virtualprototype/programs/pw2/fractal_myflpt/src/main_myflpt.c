@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#define mant_16
+
 // Constants describing the output device
 const int SCREEN_WIDTH = 512;   //!< screen width
 const int SCREEN_HEIGHT = 512;  //!< screen height
@@ -15,11 +17,11 @@ const float CX_0 = -2.0;      //!< default start x-coordinate (-2.0 in Q4.28)
 const float CY_0 = -1.5;      //!< default start y-coordinate (-1.5 in Q4.28)
 const uint16_t N_MAX = 64;    //!< maximum number of iterations
 
+
 int main() {
    volatile unsigned int *vga = (unsigned int *) 0x50000020;
    volatile unsigned int reg, hi;
    rgb565 frameBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
-   float delta = FRAC_WIDTH / SCREEN_WIDTH;
    int i;
    vga_clear();
    printf("Starting drawing a fractal\n");
@@ -38,7 +40,22 @@ int main() {
    /* Clear screen */
    for (i = 0 ; i < SCREEN_WIDTH*SCREEN_HEIGHT ; i++) frameBuffer[i]=0;
 
-   draw_fractal(frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,&calc_mandelbrot_point_soft, &iter_to_colour,CX_0,CY_0,delta,N_MAX);
+#ifdef mant_16
+   Myfloat_16 FRAC_WITDH_myfloat = float_to_Myfloat_16(FRAC_WIDTH);
+   Myfloat_16 SCREEN_WIDTH_myfloat = float_to_Myfloat_16((float) SCREEN_WIDTH);
+   Myfloat_16 delta = div_Myfloat_16(FRAC_WITDH_myfloat, SCREEN_WIDTH_myfloat);
+   Myfloat_16 CX_0_myfloat = float_to_Myfloat_16(CX_0);
+   Myfloat_16 CY_0_myfloat = float_to_Myfloat_16(CY_0);
+   draw_fractal_16(frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,&calc_mandelbrot_Myfloat_16, &iter_to_colour,CX_0_myfloat,CY_0_myfloat,delta,N_MAX);
+#else
+   Myfloat_32 CX_0_myfloat = float_to_Myfloat_32(CX_0);
+   Myfloat_32 CY_0_myfloat = float_to_Myfloat_32(CY_0);
+   Myfloat_32 FRAC_WITDH_myfloat = float_to_Myfloat_32(FRAC_WIDTH);
+   Myfloat_32 SCREEN_WIDTH_myfloat = float_to_Myfloat_32((float) SCREEN_WIDTH);
+   Myfloat_32 delta = div_Myfloat_32(FRAC_WITDH_myfloat, SCREEN_WIDTH_myfloat);
+   draw_fractal_32(frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,&calc_mandelbrot_Myfloat_32, &iter_to_colour,CX_0_myfloat,CY_0_myfloat,delta,N_MAX);
+#endif
+   
 #ifdef __OR1300__
    dcache_flush();
 #endif
