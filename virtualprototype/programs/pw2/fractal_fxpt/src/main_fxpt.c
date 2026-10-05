@@ -11,20 +11,24 @@ const int SCREEN_WIDTH = 512;   //!< screen width
 const int SCREEN_HEIGHT = 512;  //!< screen height
 
 // Constants describing the initial view port on the fractal function
+const float FRAC_WIDTH = 3.0; //!< default fractal width (3.0 in Q4.28)
+const float CX_0 = -2.0;      //!< default start x-coordinate (-2.0 in Q4.28)
+const float CY_0 = -1.5;      //!< default start y-coordinate (-1.5 in Q4.28)
 const uint16_t N_MAX = 64;    //!< maximum number of iterations
-const   fract_t_Q3_29 frac_width_fxpt, cx_0_fxpt, cy_0_fxpt;
-frac_width_fxpt = f_to_fxpt_Q3_29(3.0);
-cx_0_fxpt = f_to_fxpt_Q3_29(-2.0);
-cy_0_fxpt = f_to_fxpt_Q3_29(-1.5);
+
 int main() {
    volatile unsigned int *vga = (unsigned int *) 0x50000020;
    volatile unsigned int reg, hi;
- 
-   fxpt_t_Q3_29 delta_fxpt = frac_width_fxpt / SCREEN_WIDTH;
+   float delta = FRAC_WIDTH / SCREEN_WIDTH;
    rgb565 frameBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
    int i;
    vga_clear();
    printf("Starting drawing a fractal\n");
+
+// passage en ixed point Q2.30
+   fxpt_t_Q3_29 delta_fxpt = f_to_fxpt_Q3_29(delta);
+   fxpt_t_Q3_29 cx_0_fxpt = f_to_fxpt_Q3_29(CX_0);
+   fxpt_t_Q3_29 cy_0_fxpt = f_to_fxpt_Q3_29(CY_0);
 
 #ifdef __OR1300__   
    /* enable the caches */
