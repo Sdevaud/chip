@@ -2,7 +2,7 @@
 #include "swap.h"
 #include "vga.h"
 #include "cache.h"
-
+#include <perf.h>
 #include <stddef.h>
 #include <stdio.h>
 
@@ -17,6 +17,9 @@ const float CY_0 = -1.5;      //!< default start y-coordinate (-1.5 in Q4.28)
 const uint16_t N_MAX = 64;    //!< maximum number of iterations
 
 int main() {
+   perf_init();
+   perf_set_mask(PERF_COUNTER_0, PERF_EXECUTED_INSTRUCTIONS_MASK);
+   perf_set_mask(PERF_COUNTER_1, PERF_STALL_CYCLES_MASK);
    volatile unsigned int *vga = (unsigned int *) 0x50000020;
    volatile unsigned int reg, hi;
    float delta = FRAC_WIDTH / SCREEN_WIDTH;
@@ -25,7 +28,7 @@ int main() {
    vga_clear();
    printf("Starting drawing a fractal\n");
 
-// passage en ixed point Q2.30
+// Values in Q3.29 fixed point representation
    fxpt_t_Q3_29 delta_fxpt = f_to_fxpt_Q3_29(delta);
    fxpt_t_Q3_29 cx_0_fxpt = f_to_fxpt_Q3_29(CX_0);
    fxpt_t_Q3_29 cy_0_fxpt = f_to_fxpt_Q3_29(CY_0);
@@ -44,9 +47,13 @@ int main() {
    vga[3] = swap_u32((unsigned int)&frameBuffer[0]);
    /* Clear screen */
    for (i = 0 ; i < SCREEN_WIDTH*SCREEN_HEIGHT ; i++) frameBuffer[i]=0;
-
+   perf_start();
    draw_fractal(frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,&calc_mandelbrot_point_soft, &iter_to_colour,cx_0_fxpt,cy_0_fxpt,delta_fxpt,N_MAX);
-#ifdef __OR1300__
+   perf_stop();
+   perf_print_time(PERF_COUNTER_RUNTIME, "draw_fractal");
+   perf_print_cycles(PERF_COUNTER_0, "instructions");
+   perf_print_cycles(PERF_COUNTER_1, "stall cycles");
+   #ifdef __OR1300__
    dcache_flush();
 #endif
    printf("Done\n");
