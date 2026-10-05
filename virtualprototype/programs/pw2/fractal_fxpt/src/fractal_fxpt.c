@@ -6,20 +6,22 @@
 //! \param  cy    y-coordinate
 //! \param  n_max maximum number of iterations
 //! \return       number of performed iterations at coordinate (cx, cy)
-uint16_t calc_mandelbrot_point_soft(float cx, float cy, uint16_t n_max) {
-  float x = cx;
-  float y = cy;
+uint16_t calc_mandelbrot_point_soft(fxpt_t_Q2_30 cx, fxpt_t_Q2_30 cy, uint16_t n_max) {
+  fxpt_t_Q2_30 x = cx;
+  fxpt_t_Q2_30 y = cy;
   uint16_t n = 0;
-  float xx, yy, two_xy;
+  int64_t xx, yy, two_xy;
   do {
-    xx = x * x;
-    yy = y * y;
-    two_xy = 2 * x * y;
+    xx = ((int64_t)x * x) >> 30;
+    yy = ((int64_t)y * y) >> 30;
+    two_xy = 2 * ((int64_t)x * y) >> 30;
 
-    x = xx - yy + cx;
-    y = two_xy + cy;
+    int64_t  new_x = xx - yy + cx;
+    int64_t new_y = two_xy + cy;
+    x = (fxpt_t_Q2_30)new_x;
+    y = (fxpt_t_Q2_30)new_y;
     ++n;
-  } while (((xx + yy) < 4) && (n < n_max));
+  } while (((xx + yy) < 4LL * (1LL << 30)) && (n < n_max));
   return n;
 }
 
@@ -100,11 +102,11 @@ rgb565 iter_to_colour1(uint16_t iter, uint16_t n_max) {
 //! \param  n_max  maximum number of iterations
 void draw_fractal(rgb565 *fbuf, int width, int height,
                   calc_frac_point_p cfp_p, iter_to_colour_p i2c_p,
-                  float cx_0, float cy_0, float delta, uint16_t n_max) {
+                  fxpt_t_Q2_30 cx_0, fxpt_t_Q2_30 cy_0, fxpt_t_Q2_30 delta, uint16_t n_max) {
   rgb565 *pixel = fbuf;
-  float cy = cy_0;
+  fxpt_t_Q2_30 cy = cy_0;
   for (int k = 0; k < height; ++k) {
-    float cx = cx_0;
+    fxpt_t_Q2_30 cx = cx_0;
     for(int i = 0; i < width; ++i) {
       uint16_t n_iter = (*cfp_p)(cx, cy, n_max);
       rgb565 colour = (*i2c_p)(n_iter, n_max);

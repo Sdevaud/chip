@@ -2,6 +2,7 @@
 #include "swap.h"
 #include "vga.h"
 #include "cache.h"
+
 #include <stddef.h>
 #include <stdio.h>
 
@@ -18,11 +19,16 @@ const uint16_t N_MAX = 64;    //!< maximum number of iterations
 int main() {
    volatile unsigned int *vga = (unsigned int *) 0x50000020;
    volatile unsigned int reg, hi;
-   rgb565 frameBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
    float delta = FRAC_WIDTH / SCREEN_WIDTH;
    int i;
    vga_clear();
    printf("Starting drawing a fractal\n");
+
+// passage en ixed point Q2.30
+   fxpt_t_Q2_30 delta_fxpt = f_to_fxpt_Q2_30(delta);
+   fxpt_t_Q2_30 cx_0_fxpt = f_to_fxpt_Q2_30(CX_0);
+   fxpt_t_Q2_30 cy_0_fxpt = f_to_fxpt_Q2_30(CY_0);
+
 #ifdef __OR1300__   
    /* enable the caches */
    icache_write_cfg( CACHE_DIRECT_MAPPED | CACHE_SIZE_8K | CACHE_REPLACE_FIFO );
@@ -38,7 +44,7 @@ int main() {
    /* Clear screen */
    for (i = 0 ; i < SCREEN_WIDTH*SCREEN_HEIGHT ; i++) frameBuffer[i]=0;
 
-   draw_fractal(frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,&calc_mandelbrot_point_soft, &iter_to_colour,CX_0,CY_0,delta,N_MAX);
+   draw_fractal(frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,&calc_mandelbrot_point_soft, &iter_to_colour,cx_0_fxpt,cy_0_fxpt,delta_fxpt,N_MAX);
 #ifdef __OR1300__
    dcache_flush();
 #endif
