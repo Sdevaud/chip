@@ -4,6 +4,7 @@
 #include "cache.h"
 #include <stddef.h>
 #include <stdio.h>
+#include <perf.h>
 
 #define mant_16
 
@@ -19,6 +20,10 @@ const uint16_t N_MAX = 64;    //!< maximum number of iterations
 
 
 int main() {
+   perf_init();
+   perf_set_mask(PERF_COUNTER_0, PERF_EXECUTED_INSTRUCTIONS_MASK);
+   perf_set_mask(PERF_COUNTER_1, PERF_STALL_CYCLES_MASK);
+
    volatile unsigned int *vga = (unsigned int *) 0x50000020;
    volatile unsigned int reg, hi;
    rgb565 frameBuffer[SCREEN_WIDTH*SCREEN_HEIGHT];
@@ -46,14 +51,24 @@ int main() {
    Myfloat_16 delta = div_Myfloat_16(FRAC_WITDH_myfloat, SCREEN_WIDTH_myfloat);
    Myfloat_16 CX_0_myfloat = float_to_Myfloat_16(CX_0);
    Myfloat_16 CY_0_myfloat = float_to_Myfloat_16(CY_0);
+   perf_start();
    draw_fractal_16(frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,&calc_mandelbrot_Myfloat_16, &iter_to_colour,CX_0_myfloat,CY_0_myfloat,delta,N_MAX);
+   perf_stop();
+   perf_print_time(PERF_COUNTER_RUNTIME, "draw_fractal");
+   perf_print_cycles(PERF_COUNTER_0, "instructions");
+   perf_print_cycles(PERF_COUNTER_1, "stall cycles");
 #else
    Myfloat_32 CX_0_myfloat = float_to_Myfloat_32(CX_0);
    Myfloat_32 CY_0_myfloat = float_to_Myfloat_32(CY_0);
    Myfloat_32 FRAC_WITDH_myfloat = float_to_Myfloat_32(FRAC_WIDTH);
    Myfloat_32 SCREEN_WIDTH_myfloat = float_to_Myfloat_32((float) SCREEN_WIDTH);
    Myfloat_32 delta = div_Myfloat_32(FRAC_WITDH_myfloat, SCREEN_WIDTH_myfloat);
+   perf_start();
    draw_fractal_32(frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,&calc_mandelbrot_Myfloat_32, &iter_to_colour,CX_0_myfloat,CY_0_myfloat,delta,N_MAX);
+   perf_stop();
+   perf_print_time(PERF_COUNTER_RUNTIME, "draw_fractal");
+   perf_print_cycles(PERF_COUNTER_0, "instructions");
+   perf_print_cycles(PERF_COUNTER_1, "stall cycles");
 #endif
    
 #ifdef __OR1300__
