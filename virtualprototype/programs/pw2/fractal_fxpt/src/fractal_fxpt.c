@@ -13,14 +13,14 @@ uint16_t calc_mandelbrot_point_soft(fxpt_t_Q3_29 cx, fxpt_t_Q3_29 cy, uint16_t n
   uint16_t n = 0;
   int64_t xx, yy, two_xy;
   do {
-    xx = ((int64_t)x * x) >> 29;
-    yy = ((int64_t)y * y) >> 29;
-    two_xy = 2 * ((int64_t)x * y) >> 29;
+    xx = ((int64_t)x * x) >> SCALE_FACTOR_Q3_29;
+    yy = ((int64_t)y * y) >> SCALE_FACTOR_Q3_29;
+    two_xy = 2 * ((int64_t)x * y) >> SCALE_FACTOR_Q3_29;
 
     x = (fxpt_t_Q3_29)xx - yy + cx;
     y = (fxpt_t_Q3_29)two_xy + cy;
     ++n;
-  } while (((xx + yy) < 4LL * (1LL << 29)) && (n < n_max));
+  } while (((xx + yy) < 4LL * (SCALE_Q3_29)) && (n < n_max));
   return n;
 }
 

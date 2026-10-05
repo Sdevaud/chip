@@ -5,6 +5,7 @@
 
 //! scale factor for Q3.29 fixed point representation
 #define SCALE_Q3_29 (1LL << 29) 
+#define SCALE_FACTOR_Q3_29 29
 
 //! Colour type (5-bit red, 6-bit green, 5-bit blue)
 typedef uint16_t rgb565;
