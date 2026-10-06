@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <vga.h>
 #include <spr.h>
+#include <math.h>
+#include <stdint.h>
+#include <string.h>
 
 int main () {
   int reg;
